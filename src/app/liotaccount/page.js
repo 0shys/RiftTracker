@@ -1,11 +1,12 @@
 "use client"
+
 import { useState } from 'react';
-import axios from 'axios';
 
 export default function RiotAccount() {
   const [gameName, setGameName] = useState('');
   const [tagLine, setTagLine] = useState('');
   const [summonerDetail, setSummonerDetail] = useState(null);
+  const [matchIds, setMatchIds] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -13,21 +14,37 @@ export default function RiotAccount() {
     setIsLoading(true);
     setError(null);
     setSummonerDetail(null);
+    setMatchIds(null);
 
     try {
-      // 먼저 계정 정보(PUUID) 가져오기
-      const accountResponse = await axios.get('/api/riot/account', {
-        params: { gameName, tagLine }
-      });
+      // 소환사 정보 조회
+      const summonerResponse = await fetch(
+        `/api/summoner?gameName=${encodeURIComponent(gameName)}&tagLine=${encodeURIComponent(tagLine)}`
+      );
 
-      // 계정 정보를 기반으로 소환사 상세 정보 가져오기
-      const summonerResponse = await axios.get('/api/riot/account', {
-        params: { puuid: accountResponse.data.puuid }
-      });
-      setSummonerDetail(summonerResponse.data);
-    } catch (error) {
-      console.error('소환사 정보 조회 오류', error);
-      setError(error.response?.data?.error || '소환사 정보를 불러오는 데 실패했습니다.');
+      if (!summonerResponse.ok) {
+        const errorData = await summonerResponse.json();
+        throw new Error(errorData.error || '소환사 정보 조회 중 오류가 발생했습니다.');
+      }
+
+      const summonerData = await summonerResponse.json();
+      setSummonerDetail(summonerData);
+
+      // 매치 기록 조회
+      const matchResponse = await fetch(
+        `/api/matches?gameName=${encodeURIComponent(gameName)}&tagLine=${encodeURIComponent(tagLine)}`
+      );
+
+      if (!matchResponse.ok) {
+        const errorData = await matchResponse.json();
+        throw new Error(errorData.error || '매치 기록 조회 중 오류가 발생했습니다.');
+      }
+
+      const matchData = await matchResponse.json();
+      setMatchIds(matchData.matchIds);
+
+    } catch (err) {
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
@@ -71,6 +88,19 @@ export default function RiotAccount() {
           <pre className="overflow-x-auto">
             {JSON.stringify(summonerDetail, null, 2)}
           </pre>
+        </div>
+      )}
+
+      {matchIds && (
+        <div className="mt-4 p-4 bg-gray-100 rounded">
+          <h2 className="font-bold mb-2">최근 매치 기록</h2>
+          <ul className="space-y-2">
+            {matchIds.map((matchId, index) => (
+              <li key={matchId} className="text-sm">
+                {index + 1}. {matchId}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>
