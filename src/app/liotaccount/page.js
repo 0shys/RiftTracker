@@ -1,43 +1,44 @@
 "use client"
 import { useState } from 'react';
+import styles from './liotaccount.module.css';
 
 const MatchDetail = ({ match }) => {
   if (!match) return null;
   
   return (
-    <div className="bg-white shadow rounded-lg p-6 mb-6">
+    <div className={styles.matchDetail}>
       {/* Game Info Section */}
-      <div className="mb-6">
-        <h3 className="font-bold text-xl mb-3">Game Info</h3>
-        <div className="grid grid-cols-3 gap-4 text-sm">
-          <div className="p-2 bg-gray-50 rounded">
-            <span className="font-medium">Game Mode:</span> {match.info.gameMode}
+      <div className={styles.gameInfo}>
+        <h3 className={styles.sectionTitle}>Game Info</h3>
+        <div className={styles.gameInfoGrid}>
+          <div className={styles.gameInfoItem}>
+            <span className={styles.summonerName}>Game Mode:</span> {match.info.gameMode}
           </div>
-          <div className="p-2 bg-gray-50 rounded">
-            <span className="font-medium">Duration:</span> {Math.floor(match.info.gameDuration / 60)}m {match.info.gameDuration % 60}s
+          <div className={styles.gameInfoItem}>
+            <span className={styles.summonerName}>Duration:</span> {Math.floor(match.info.gameDuration / 60)}m {match.info.gameDuration % 60}s
           </div>
-          <div className="p-2 bg-gray-50 rounded">
-            <span className="font-medium">Version:</span> {match.info.gameVersion}
+          <div className={styles.gameInfoItem}>
+            <span className={styles.summonerName}>Version:</span> {match.info.gameVersion}
           </div>
         </div>
       </div>
 
       {/* Players Table */}
       <div>
-        <h3 className="font-bold text-xl mb-4">Players</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <h3 className={styles.sectionTitle}>Players</h3>
+        <div className={styles.tableContainer}>
+          <table className={styles.table}>
             <thead>
-              <tr className="bg-gray-50">
-                <th className="px-4 py-3 text-left font-semibold">Player</th>
-                <th className="px-4 py-3 text-left font-semibold">Champion</th>
-                <th className="px-4 py-3 text-center font-semibold">K/D/A</th>
-                <th className="px-4 py-3 text-center font-semibold">KDA Ratio</th>
-                <th className="px-4 py-3 text-right font-semibold">Damage</th>
-                <th className="px-4 py-3 text-right font-semibold">Gold</th>
+              <tr className={styles.tableHeader}>
+                <th className={styles.tableHeaderCell}>Player</th>
+                <th className={styles.tableHeaderCell}>Champion</th>
+                <th className={`${styles.tableHeaderCell} ${styles.textCenter}`}>K/D/A</th>
+                <th className={`${styles.tableHeaderCell} ${styles.textCenter}`}>KDA Ratio</th>
+                <th className={`${styles.tableHeaderCell} ${styles.textRight}`}>Damage</th>
+                <th className={`${styles.tableHeaderCell} ${styles.textRight}`}>Gold</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className={styles.tableBody}>
               {match.info.participants.map((participant) => {
                 const kda = participant.deaths === 0 
                   ? 'Perfect' 
@@ -46,27 +47,24 @@ const MatchDetail = ({ match }) => {
                 return (
                   <tr 
                     key={participant.puuid}
-                    className={`
-                      ${participant.win ? 'bg-blue-50 hover:bg-blue-100' : 'bg-red-50 hover:bg-red-100'}
-                      transition-colors duration-150
-                    `}
+                    className={`${styles.tableRow} ${participant.win ? styles.winningTeam : styles.losingTeam}`}
                   >
-                    <td className="px-4 py-3">
-                      <div className="font-medium">{participant.summonerName}</div>
+                    <td className={`${styles.tableCell} ${styles.summonerName}`}>
+                      {participant.summonerName}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className={styles.tableCell}>
                       {participant.championName}
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td className={`${styles.tableCell} ${styles.textCenter}`}>
                       {participant.kills}/{participant.deaths}/{participant.assists}
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td className={`${styles.tableCell} ${styles.textCenter}`}>
                       {kda}
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className={`${styles.tableCell} ${styles.textRight}`}>
                       {participant.totalDamageDealtToChampions.toLocaleString()}
                     </td>
-                    <td className="px-4 py-3 text-right">
+                    <td className={`${styles.tableCell} ${styles.textRight}`}>
                       {participant.goldEarned.toLocaleString()}
                     </td>
                   </tr>
@@ -81,13 +79,26 @@ const MatchDetail = ({ match }) => {
 };
 
 export default function RiotAccount() {
-  const [gameName, setGameName] = useState('');
-  const [tagLine, setTagLine] = useState('');
+  const [inputValue, setInputValue] = useState('');
   const [summonerDetail, setSummonerDetail] = useState(null);
   const [matchIds, setMatchIds] = useState(null);
   const [matchDetails, setMatchDetails] = useState([]);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Previous functions remain the same
+  const parseInput = (value) => {
+    const [gameName, tagLine] = value.split('#');
+    return {
+      gameName: gameName?.trim() || '',
+      tagLine: tagLine ? tagLine.trim() : ''
+    };
+  };
+
+  const isValidInput = (value) => {
+    const { gameName, tagLine } = parseInput(value);
+    return gameName && tagLine;
+  };
 
   const fetchMatchDetails = async (matchId) => {
     try {
@@ -102,6 +113,7 @@ export default function RiotAccount() {
       return null;
     }
   };
+
   const fetchSummonerInfo = async () => {
     setIsLoading(true);
     setError(null);
@@ -109,8 +121,9 @@ export default function RiotAccount() {
     setMatchIds(null);
     setMatchDetails([]);
 
+    const { gameName, tagLine } = parseInput(inputValue);
+
     try {
-      // Fetch summoner info
       const summonerResponse = await fetch(
         `/api/summoner?gameName=${encodeURIComponent(gameName)}&tagLine=${encodeURIComponent(tagLine)}`
       );
@@ -123,7 +136,6 @@ export default function RiotAccount() {
       const summonerData = await summonerResponse.json();
       setSummonerDetail(summonerData);
 
-      // Fetch match history
       const matchResponse = await fetch(
         `/api/matches?gameName=${encodeURIComponent(gameName)}&tagLine=${encodeURIComponent(tagLine)}`
       );
@@ -136,7 +148,6 @@ export default function RiotAccount() {
       const matchData = await matchResponse.json();
       setMatchIds(matchData.matchIds);
 
-      // Fetch details for each match
       const details = await Promise.all(
         matchData.matchIds.slice(0, 5).map(fetchMatchDetails)
       );
@@ -149,47 +160,47 @@ export default function RiotAccount() {
   };
 
   return (
-    <div className="p-4 max-w-6xl mx-auto">
-      <div className="mb-4 flex">
-        <input
-          type="text"
-          value={gameName}
-          onChange={(e) => setGameName(e.target.value)}
-          placeholder="Game Name"
-          className="mr-2 px-2 py-1 border rounded flex-grow"
-        />
-        <input
-          type="text"
-          value={tagLine}
-          onChange={(e) => setTagLine(e.target.value)}
-          placeholder="Tag Line"
-          className="px-2 py-1 border rounded w-24"
-        />
+    <div className={styles.container}>
+      <div className={styles.searchContainer}>
+        <div className={styles.inputWrapper}>
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            placeholder="Enter Game Name#Tag (ex: Name#KR1)"
+            className={styles.input}
+          />
+          {inputValue && !inputValue.includes('#') && (
+            <p className={styles.inputHint}>
+              Don't forget to add #TagLine
+            </p>
+          )}
+        </div>
         <button
           onClick={fetchSummonerInfo}
-          disabled={isLoading || !gameName || !tagLine}
-          className="ml-2 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+          disabled={isLoading || !isValidInput(inputValue)}
+          className={styles.searchButton}
         >
           {isLoading ? 'Loading...' : 'Search'}
         </button>
       </div>
 
       {error && (
-        <div className="text-red-500 mt-4 p-4 bg-red-50 rounded">
+        <div className={styles.errorMessage}>
           Error: {error}
         </div>
       )}
 
       {summonerDetail && (
-        <div className="mt-4 p-4 bg-gray-50 rounded">
-          <h2 className="font-bold text-xl mb-2">Summoner Profile</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className={styles.summonerProfile}>
+          <h2 className={styles.profileTitle}>Summoner Profile</h2>
+          <div className={styles.profileGrid}>
             <div>
-              <p className="font-semibold">Name</p>
+              <p className={styles.summonerName}>Name</p>
               <p>{summonerDetail.name}</p>
             </div>
             <div>
-              <p className="font-semibold">Level</p>
+              <p className={styles.summonerName}>Level</p>
               <p>{summonerDetail.summonerLevel}</p>
             </div>
           </div>
@@ -197,8 +208,8 @@ export default function RiotAccount() {
       )}
 
       {matchDetails.length > 0 && (
-        <div className="mt-4">
-          <h2 className="font-bold text-xl mb-4">Recent Matches</h2>
+        <div className={styles.matchesSection}>
+          <h2 className={styles.matchesTitle}>Recent Matches</h2>
           {matchDetails.map((match) => (
             <MatchDetail key={match.metadata.matchId} match={match} />
           ))}

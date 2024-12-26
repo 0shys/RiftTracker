@@ -1,0 +1,178 @@
+.container {
+    padding: 1rem;
+    max-width: 72rem;
+    margin: 0 auto;
+  }
+  
+  .searchContainer {
+    margin-bottom: 1rem;
+    display: flex;
+  }
+  
+  .inputWrapper {
+    position: relative;
+    flex-grow: 1;
+  }
+  
+  .input {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.25rem;
+  }
+  
+  .inputHint {
+    position: absolute;
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+  }
+  
+  .searchButton {
+    margin-left: 0.5rem;
+    background-color: #3b82f6;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    transition: background-color 0.15s;
+  }
+  
+  .searchButton:hover {
+    background-color: #2563eb;
+  }
+  
+  .searchButton:disabled {
+    opacity: 0.5;
+  }
+  
+  .errorMessage {
+    color: #ef4444;
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #fef2f2;
+    border-radius: 0.25rem;
+  }
+  
+  .summonerProfile {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: #f9fafb;
+    border-radius: 0.25rem;
+  }
+  
+  .profileTitle {
+    font-weight: bold;
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .profileGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  @media (min-width: 768px) {
+    .profileGrid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+  
+  .matchDetail {
+    background-color: white;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .gameInfo {
+    margin-bottom: 1.5rem;
+  }
+  
+  .sectionTitle {
+    font-weight: bold;
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .gameInfoGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    font-size: 0.875rem;
+  }
+  
+  .gameInfoItem {
+    padding: 0.5rem;
+    background-color: #f9fafb;
+    border-radius: 0.25rem;
+  }
+  
+  .tableContainer {
+    overflow-x: auto;
+  }
+  
+  .table {
+    width: 100%;
+  }
+  
+  .tableHeader {
+    background-color: #f9fafb;
+  }
+  
+  .tableHeaderCell {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+  }
+  
+  .tableBody {
+    border-top: 1px solid #e5e7eb;
+  }
+  
+  .tableRow {
+    transition: background-color 0.15s;
+  }
+  
+  .winningTeam {
+    background-color: #eff6ff;
+  }
+  
+  .winningTeam:hover {
+    background-color: #dbeafe;
+  }
+  
+  .losingTeam {
+    background-color: #fef2f2;
+  }
+  
+  .losingTeam:hover {
+    background-color: #fee2e2;
+  }
+  
+  .tableCell {
+    padding: 0.75rem 1rem;
+  }
+  
+  .summonerName {
+    font-weight: 500;
+  }
+  
+  .textCenter {
+    text-align: center;
+  }
+  
+  .textRight {
+    text-align: right;
+  }
+  
+  .matchesSection {
+    margin-top: 1rem;
+  }
+  
+  .matchesTitle {
+    font-weight: bold;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
