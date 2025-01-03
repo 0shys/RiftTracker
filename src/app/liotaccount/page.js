@@ -1,9 +1,14 @@
 "use client"
 import { useState } from 'react';
 import styles from './liotaccount.module.css';
+import Image from 'next/image';
 
 const MatchDetail = ({ match }) => {
   if (!match) return null;
+  
+  const getChampionImage = (championName) => {
+    return `https://ddragon.leagueoflegends.com/cdn/14.1.1/img/champion/${championName}.png`;
+  };
   
   return (
     <div className={styles.matchDetail}>
@@ -52,8 +57,17 @@ const MatchDetail = ({ match }) => {
                     <td className={`${styles.tableCell} ${styles.summonerName}`}>
                       {participant.summonerName}
                     </td>
-                    <td className={styles.tableCell}>
-                      {participant.championName}
+                    <td className={`${styles.tableCell} ${styles.championCell}`}>
+                      <div className={styles.championInfo}>
+                        <Image
+                          src={getChampionImage(participant.championName)}
+                          alt={participant.championName}
+                          width={32}
+                          height={32}
+                          className={styles.championImage}
+                        />
+                        <span>{participant.championName}</span>
+                      </div>
                     </td>
                     <td className={`${styles.tableCell} ${styles.textCenter}`}>
                       {participant.kills}/{participant.deaths}/{participant.assists}
@@ -86,7 +100,6 @@ export default function RiotAccount() {
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Previous functions remain the same
   const parseInput = (value) => {
     const [gameName, tagLine] = value.split('#');
     return {
@@ -124,30 +137,31 @@ export default function RiotAccount() {
     const { gameName, tagLine } = parseInput(inputValue);
 
     try {
-      const summonerResponse = await fetch(
-        `/api/summoner?gameName=${encodeURIComponent(gameName)}&tagLine=${encodeURIComponent(tagLine)}`
-      );
+      // Fetch summoner info and match history in parallel
+      const [summonerResponse, matchResponse] = await Promise.all([
+        fetch(`/api/summoner?gameName=${encodeURIComponent(gameName)}&tagLine=${encodeURIComponent(tagLine)}`),
+        fetch(`/api/matches?gameName=${encodeURIComponent(gameName)}&tagLine=${encodeURIComponent(tagLine)}`)
+      ]);
 
       if (!summonerResponse.ok) {
         const errorData = await summonerResponse.json();
         throw new Error(errorData.error || 'Failed to fetch summoner info');
       }
 
-      const summonerData = await summonerResponse.json();
-      setSummonerDetail(summonerData);
-
-      const matchResponse = await fetch(
-        `/api/matches?gameName=${encodeURIComponent(gameName)}&tagLine=${encodeURIComponent(tagLine)}`
-      );
-
       if (!matchResponse.ok) {
         const errorData = await matchResponse.json();
         throw new Error(errorData.error || 'Failed to fetch match history');
       }
 
-      const matchData = await matchResponse.json();
+      const [summonerData, matchData] = await Promise.all([
+        summonerResponse.json(),
+        matchResponse.json()
+      ]);
+
+      setSummonerDetail(summonerData);
       setMatchIds(matchData.matchIds);
 
+      // Fetch match details in parallel
       const details = await Promise.all(
         matchData.matchIds.slice(0, 5).map(fetchMatchDetails)
       );
@@ -167,7 +181,7 @@ export default function RiotAccount() {
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Enter Game Name#Tag (ex: Name#KR1)"
+            placeholder="플레이어 이름 + #KR1"
             className={styles.input}
           />
           {inputValue && !inputValue.includes('#') && (
